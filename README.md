@@ -8,6 +8,8 @@ Das Programm gibt es auch als reine Pythonausführung hier:
 
 Im Programm werden die **Dimensionen** der Box, die **Materialstärke** und die **Zinkenbreite** eingegeben.
 
+<img width = "80%" src="IMG/inkscapeboxgenerator1.jpg" />
+
 Es werden nur drei Seiten der Box angezeigt. Für die komplette Box müssen diese Seiten **zweimal** geschnitten werden. 
 
 Auf den Flächen können nun auch noch Gravierungen oder Löcher eingearbeitet werden.
@@ -15,6 +17,5 @@ Auf den Flächen können nun auch noch Gravierungen oder Löcher eingearbeitet w
 Im **XML Editor von Inkscape** kann man schön den Aufbau der SVG erkennen.
 
 
-<img width = "60%" src="IMG/box_generator1.jpg" />
 
 
