@@ -1,27 +1,28 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-Example of extensions template for inkscape
+@author: mini@revollo.de
+member of the erfindergarden
+
+Inkscape Erweiterung - Box Generator
+13.01.2019
+
+Danke an neon22    https://github.com/Neon22/inkscape_extension_template
+Nach seiner Anleitung konnte ich dieses Programm erstellen.
 
 '''
 
 import inkex       # Required
 import simplestyle # will be needed here for styles support
-import os          # here for alternative debug method only - so not usually required
-# many other useful ones in extensions folder. E.g. simplepath, cubicsuperpath, ...
-
-from math import cos, sin, radians
 
 __version__ = '0.2'
 
 inkex.localize()
 
-### Your helper functions go here
 def points_to_svgd(p, close=True):
     """ convert list of points (x,y) pairs
         into a closed SVG path list
     """
-    print("hallo world")
     f = p[0]
     p = p[1:]
     svgd = 'M%.4f,%.4f' % f
@@ -31,45 +32,17 @@ def points_to_svgd(p, close=True):
         svgd += 'z'
     return svgd
 
-def points_to_bbox(p):
-    """ from a list of points (x,y pairs)
-        - return the lower-left xy and upper-right xy
-    """
-    llx = urx = p[0][0]
-    lly = ury = p[0][1]
-    for x in p[1:]:
-        if   x[0] < llx: llx = x[0]
-        elif x[0] > urx: urx = x[0]
-        if   x[1] < lly: lly = x[1]
-        elif x[1] > ury: ury = x[1]
-    return (llx, lly, urx, ury)
-
-def points_to_bbox_center(p):
-    """ from a list of points (x,y pairs)
-        - find midpoint of bounding box around all points
-        - return (x,y)
-    """
-    bbox = points_to_bbox(p)
-    return ((bbox[0]+bbox[2])/2.0, (bbox[1]+bbox[3])/2.0)
-
-
 
 
 ### Your main function subclasses the inkex.Effect class
 
-class Box(inkex.Effect): # choose a better name
+class Box(inkex.Effect): 
+    ###Erstellt die Box.
     
     def __init__(self):
         " define how the options are mapped from the inx file "
         inkex.Effect.__init__(self) # initialize the super class
         
-        # Two ways to get debug info:
-        # OR just use inkex.debug(string) instead...
-        try:
-            self.tty = open("/dev/tty", 'w')
-        except:
-            self.tty = open(os.devnull, 'w')  # '/dev/null' for POSIX, 'nul' for Windows.
-            # print >>self.tty, "gears-dev " + __version__
             
         # Define your list of parameters defined in the .inx file
         self.OptionParser.add_option("", "--breite",
@@ -107,51 +80,22 @@ class Box(inkex.Effect): # choose a better name
         self.seite_punkte = []
         self.deckel_punkte = []
         
-        
-        
-        
-    def getUnittouu(self, param):
-        " for 0.48 and 0.91 compatibility "
-        try:
-            return inkex.unittouu(param)
-        except AttributeError:
-            return self.unittouu(param)
-    
-    def add_text(self, node, text, position, text_height=12):
-        """ Create and insert a single line of text into the svg under node.
-        """
-        line_style = {'font-size': '%dpx' % text_height, 'font-style':'normal', 'font-weight': 'normal',
-                     'fill': '#F6921E', 'font-family': 'Bitstream Vera Sans,sans-serif',
-                     'text-anchor': 'middle', 'text-align': 'center'}
-        line_attribs = {inkex.addNS('label','inkscape'): 'Annotation',
-                       'style': simplestyle.formatStyle(line_style),
-                       'x': str(position[0]),
-                       'y': str((position[1] + text_height) * 1.2)
-                       }
-        line = inkex.etree.SubElement(node, inkex.addNS('text','svg'), line_attribs)
-        line.text = text
-
-           
-    def calc_unit_factor(self):
-        """ return the scale factor for all dimension conversions.
-            - The document units are always irrelevant as
-              everything in inkscape is expected to be in 90dpi pixel units
-        """
-        # namedView = self.document.getroot().find(inkex.addNS('namedview', 'sodipodi'))
-        # doc_units = self.getUnittouu(str(1.0) + namedView.get(inkex.addNS('document-units', 'inkscape')))
-        unit_factor = self.getUnittouu(str(1.0) + self.options.units)
-        return unit_factor
     
     def schreiben_x_y(self, x, y, liste):
         ###Schreibt die aktuellen Koordinaten in die Punkteliste
         
-        liste.append((x,y))
-         
+        if liste == 0:
+            self.front_punkte.append((x, y))
+        if liste == 1:
+            self.seite_punkte.append((x, y))
+        if liste == 2:
+            self.deckel_punkte.append((x, y))
+       
 
     def front_erstellen(self):
         
         ###Startpunkt wird gesetzt.
-        liste = self.front_punkte
+        liste = 0
         x = 0
         y = 0        
         self.schreiben_x_y(x, y, liste)
@@ -224,7 +168,7 @@ class Box(inkex.Effect): # choose a better name
     def seite_erstellen(self):
             
         ###Startpunkt wird gesetzt.
-        liste = self.front_punkte
+        liste = 1
         x = self.breite + 5 + self.material
         y = 0
         self.schreiben_x_y(x, y, liste)
@@ -296,7 +240,7 @@ class Box(inkex.Effect): # choose a better name
     def deckel_erstellen(self):
         
         ###Startpunkt wird gesetzt.
-        liste = self.front_punkte
+        liste = 2
         x = self.breite + 5 + self.tiefe + 5 + self.material
         y = self.material
         self.schreiben_x_y(x, y, liste)
@@ -372,20 +316,15 @@ class Box(inkex.Effect): # choose a better name
 ### This is your main function and is called when the extension is run.
     
     def effect(self):
-        """ Calculate Gear factors from inputs.
-            - Make list of radii, angles, and centers for each tooth and 
-              iterate through them
-            - Turn on other visual features e.g. cross, rack, annotations, etc
-        """
+        ###Hauptprogramm
         
-        # gather incoming params and convert
+        # holt die Parameter aus Inkscape
         self.breite = self.options.breite
         self.hoehe = self.options.hoehe
         self.tiefe = self.options.tiefe
         self.material = self.options.material
         self.zahnbreite = self.options.zahnbreite
         
-             
         self.puffer = self.material * 2 #um eine zu kleine Ecke zu vermeiden
         #Berechnung der Reste der Breite br zwischen Ecke und erstem Zahn
         self.bzm = int((self.breite - (2 * self.material) - self.puffer) / (self.zahnbreite * 2))
@@ -401,44 +340,69 @@ class Box(inkex.Effect): # choose a better name
         self.seite_erstellen()
         self.deckel_erstellen()
         
-        path_stroke = '#000000'  # take color from tab3
-        path_fill   = 'none'     # no fill - just a line
-        path_stroke_width  = 0.6 # can also be in form '0.6mm'
+        path_stroke = '#101010'  # Farbe für die Box
+        path_fill   = 'none'     # keine Füllung, nur eine Linie
+        path_stroke_width  = '0.2' # can also be in form '0.6mm'
         
-        # calculate unit factor for units defined in dialog. 
-        #unit_factor = self.calc_unit_factor()
         # what page are we on
         page_id = self.options.active_tab # sometimes wrong the very first time
 
-        # Do your thing - create some points or a path or whatever...  
+        # Die gesammelten x und y Koordinaten der Punkte werden in Pfade (d) umgewandelt.  
+        
         front_pfad = points_to_svgd(self.front_punkte )
         seite_pfad = points_to_svgd(self.seite_punkte )
         deckel_pfad  = points_to_svgd(self.deckel_punkte )
 
-        #inkex.debug(path)
-        #bbox_center = points_to_bbox_center( points )
-        # example debug
-        # print >>self.tty, bbox_center
-        # or
-        # inkex.debug("bbox center %s" % bbox_center)
-
-        
         # Embed the path in a group to make animation easier:
         # Be sure to examine the internal structure by looking in the xml editor inside inkscape
-        # This finds center of exisiting document page
         
-       
         # Make a nice useful name
-        g_attribs = { inkex.addNS('label','inkscape'): 'box-gruppe'}
+        g_attribs = { inkex.addNS('label','inkscape'): 'box-gruppe', 'id': "box",}
         # add the group to the document's current layer
         topgroup = inkex.etree.SubElement(self.current_layer, 'g', g_attribs )
         # Create SVG Path under this top level group
         # define style using basic dictionary
-        pfad_attribute = { 'stroke': path_stroke, 'fill': path_fill, 'stroke-width': path_stroke_width }
+        front_attribute = {'id': "front", 'stroke': path_stroke, 'fill': path_fill, 'stroke-width': path_stroke_width, 'd': front_pfad}
+        seite_attribute = {'id': "seite",'stroke': path_stroke, 'fill': path_fill, 'stroke-width': path_stroke_width, 'd': seite_pfad}
+        deckel_attribute = {'id': "deckel",'stroke': path_stroke, 'fill': path_fill, 'stroke-width': path_stroke_width, 'd': deckel_pfad}
         # add path to scene                
-        front = inkex.etree.SubElement(topgroup, inkex.addNS('front_pfad','svg'), pfad_attribute )
-        seite = inkex.etree.SubElement(topgroup, inkex.addNS('seite_pfad','svg'), pfad_attribute )
-        deckel = inkex.etree.SubElement(topgroup, inkex.addNS('deckel_pfad','svg'), pfad_attribute )
+        front = inkex.etree.SubElement(topgroup, inkex.addNS('path','svg'), front_attribute )
+        seite = inkex.etree.SubElement(topgroup, inkex.addNS('path','svg'), seite_attribute )
+        deckel = inkex.etree.SubElement(topgroup, inkex.addNS('path','svg'), deckel_attribute )
+
+        # Make a nice useful name
+        text_g_attribs = { inkex.addNS('label','inkscape'): 'box-gruppe', 'id': "Beschriftung",}
+        # add the group to the document's current layer
+        textgroup = inkex.etree.SubElement(self.current_layer, 'g', text_g_attribs )
+
+        line_style = {'font-size': '5px', 'font-style':'normal', 'font-weight': 'normal',
+                     'fill': '#ff0000', 'font-family': 'Consolas',
+                     'text-anchor': 'middle', 'text-align': 'center'}
+        front_line_attribs = {inkex.addNS('label','inkscape'): 'front-text',
+                       'id': 'front text',
+                       'style': simplestyle.formatStyle(line_style),
+                       'x': str(int(self.breite / 2)),
+                       'y': str(int(self.hoehe / 2)),
+                       }
+        seite_line_attribs = {inkex.addNS('label','inkscape'): 'seite-text',
+                       'id': 'seite text',
+                       'style': simplestyle.formatStyle(line_style),
+                       'x': str(int(self.breite + self.tiefe / 2)),
+                       'y': str(int(self.hoehe / 2)),
+                       }
+        deckel_line_attribs = {inkex.addNS('label','inkscape'): 'deckel-text',
+                       'id': 'deckel text',
+                       'style': simplestyle.formatStyle(line_style),
+                       'x': str(int(self.breite + self.tiefe  * 1.5)),
+                       'y': str(int(self.breite / 2)),
+                       }
+        front_line = inkex.etree.SubElement(textgroup, inkex.addNS('text','svg'), front_line_attribs)
+        front_line.text = 'vorne/hinten'
+        seite_line = inkex.etree.SubElement(textgroup, inkex.addNS('text','svg'), seite_line_attribs)
+        seite_line.text = 'links/rechts'
+        deckel_line = inkex.etree.SubElement(textgroup, inkex.addNS('text','svg'), deckel_line_attribs)
+        deckel_line.text = 'oben/unten'
+
 
 
 if __name__ == '__main__':
