@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+  <!-- _name must have same name as .py file but capitalise it. Shows on Menu this way-->
+  <_name>Boxgenerator</_name>
+  <!-- id should be unique. Associates entered values with this menu -->
+  <id>githubacct.uniqueid.Boxgenerator</id>
+  <!-- mention a dependency here and will check for existence (optional)-->
+  <dependency type="executable" location="extensions">boxgenerator.py</dependency>
+  <dependency type="executable" location="extensions">simplestyle.py</dependency>
+  <!-- start notebook -->
+  <param name="active-tab" type="notebook">
+    <!-- one per page(tab) - unique names. Can discover which page in program-->
+    <page name="einstellungen" _gui-text="Einstellungen">
+      <param name="breite" type="int" min="10" max="1200" _gui-text="Breite in mm">20</param>
+      <param name="hoehe" type="int" min="20" max="1000" _gui-text="Hoehe in mm ">50</param>
+      <param name="tiefe" type="int" min="20" max="1000" _gui-text="Tiefe in mm">80</param>
+      <param name="material" type="float" min="1" max="50" _gui-text="Materialstärke ">3.6</param>
+      <param name="zahnbreite" type="int" min="3" max="1000" _gui-text="Zahnbreite in mm">8</param>
+    </page>
+    <!-- next tab -->
+    <page name="hilfe" _gui-text="Hilfe">
+      <_param name="use2" type="description" xml:space="preserve">Das Ergebnis ist nur eine Hälfte einer Box und muss dupliziert werden.
+
+
+
+
+
+
+
+
+
+			</_param>
+    </page>
+  </param>
+  <!-- classify which menu it appears under - can be new name -->
+  <effect>
+    <object-type>all</object-type>
+    <effects-menu>
+      <submenu _name="Render" />
+      <!-- which menu under Extensions -->
+    </effects-menu>
+  </effect>
+  <!-- py file again -->
+  <script>
+    <command reldir="extensions" interpreter="python">boxgenerator.py</command>
+  </script>
+</inkscape-extension>
