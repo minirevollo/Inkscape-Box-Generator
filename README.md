@@ -23,4 +23,8 @@ Im **XML Editor von Inkscape** kann man schön den Aufbau der SVG erkennen.
 
 <img width = "80%" src="IMG/inkscapeboxgenerator2.jpg" />
 
+----------
+
+
+Die beiden Dateien **boxengenerator.py** und **boxengenerator.inx** in den Ordner **...Programme/inkscape/share/extensions** kopieren und **Inkscape neu starten**.
 
