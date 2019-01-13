@@ -21,6 +21,7 @@ def points_to_svgd(p, close=True):
     """ convert list of points (x,y) pairs
         into a closed SVG path list
     """
+    print("hallo world")
     f = p[0]
     p = p[1:]
     svgd = 'M%.4f,%.4f' % f
@@ -96,6 +97,12 @@ class Box(inkex.Effect): # choose a better name
                                      dest="zahnbreite", default = 7,
                                      help="Breite der Zähne")
         
+        # here so we can have tabs - but we do not use it directly - else error
+        self.OptionParser.add_option("", "--active-tab",
+                                     action="store", type="string",
+                                     dest="active_tab", default='title', # use a legitmate default
+                                     help="Active tab.")
+        
         self.front_punkte = []
         self.seite_punkte = []
         self.deckel_punkte = []
@@ -140,7 +147,6 @@ class Box(inkex.Effect): # choose a better name
         
         liste.append((x,y))
          
-
 
     def front_erstellen(self):
         
@@ -216,9 +222,7 @@ class Box(inkex.Effect): # choose a better name
         
         
     def seite_erstellen(self):
-        ###Erstellt eine Seite und fügt sie der Datei hinzu.###
-        
-        
+            
         ###Startpunkt wird gesetzt.
         liste = self.front_punkte
         x = self.breite + 5 + self.material
@@ -290,7 +294,6 @@ class Box(inkex.Effect): # choose a better name
         self.schreiben_x_y(x, y, liste)
        
     def deckel_erstellen(self):
-        ###Erstellt einen Deckel und fügt ihn der Datei hinzu.###
         
         ###Startpunkt wird gesetzt.
         liste = self.front_punkte
@@ -385,13 +388,13 @@ class Box(inkex.Effect): # choose a better name
              
         self.puffer = self.material * 2 #um eine zu kleine Ecke zu vermeiden
         #Berechnung der Reste der Breite br zwischen Ecke und erstem Zahn
-        self.bzm = round((self.breite - (2 * self.material) - self.puffer) / (self.zahnbreite * 2))
+        self.bzm = int((self.breite - (2 * self.material) - self.puffer) / (self.zahnbreite * 2))
         self.br = (self.breite - (self.bzm * self.zahnbreite * 2)) / 2
         #Berechnung der Reste der Hoehe hr zwischen Ecke und erstem Zahn
-        self.hzm = round((self.hoehe - (2 * self.material)  - self.puffer) / (self.zahnbreite * 2))
+        self.hzm = int((self.hoehe - (2 * self.material)  - self.puffer) / (self.zahnbreite * 2))
         self.hr = (self.hoehe - (self.hzm * self.zahnbreite * 2)) / 2 
         #Berechnung der Reste der Tiefe tr zwischen Ecke und erstem Zahn
-        self.tzm = round((self.tiefe - (2 * self.material)  - self.puffer) / (self.zahnbreite * 2))
+        self.tzm = int((self.tiefe - (2 * self.material)  - self.puffer) / (self.zahnbreite * 2))
         self.tr = (self.tiefe - (self.tzm * self.zahnbreite * 2)) / 2
         
         self.front_erstellen()
@@ -403,20 +406,17 @@ class Box(inkex.Effect): # choose a better name
         path_stroke_width  = 0.6 # can also be in form '0.6mm'
         
         # calculate unit factor for units defined in dialog. 
-        unit_factor = self.calc_unit_factor()
+        #unit_factor = self.calc_unit_factor()
         # what page are we on
         page_id = self.options.active_tab # sometimes wrong the very first time
 
-        # Do your thing - create some points or a path or whatever...
-        points = []
-
-        #inkex.debug(points)
-        front_pfad = points_to_svgd( self.front_punkte )
-        seite_pfad = points_to_svgd( self.seite_punkte )
-        deckel_pfad  = points_to_svgd( self.deckel_punkte )
+        # Do your thing - create some points or a path or whatever...  
+        front_pfad = points_to_svgd(self.front_punkte )
+        seite_pfad = points_to_svgd(self.seite_punkte )
+        deckel_pfad  = points_to_svgd(self.deckel_punkte )
 
         #inkex.debug(path)
-        bbox_center = points_to_bbox_center( points )
+        #bbox_center = points_to_bbox_center( points )
         # example debug
         # print >>self.tty, bbox_center
         # or
@@ -443,7 +443,7 @@ class Box(inkex.Effect): # choose a better name
 
 if __name__ == '__main__':
     box = Box()
-    box.effect()
+    box.affect()
 
 # Notes
 
